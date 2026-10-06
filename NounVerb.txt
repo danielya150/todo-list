@@ -1,0 +1,17 @@
+Task
+-due
+-priority
+-done
+	- markAsDone
+	- edit
+	- getDone
+TODOList
+-tasks
+	- filter
+	- add
+	- remove
+	- get
+	- sort
+SortByName imp comp
+SortByDate imp comp
+SortByPriority imp comp
