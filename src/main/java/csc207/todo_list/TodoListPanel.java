@@ -75,6 +75,14 @@ public class TodoListPanel extends JPanel implements ActionListener {
             }
         });
 
+        JButton edit = new JButton("Edit");
+        edit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //TODO: add edit method
+            }
+        });
+
         add(textField);
         add(scrollPane);
         add(save);
