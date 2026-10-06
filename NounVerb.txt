@@ -1,17 +1,17 @@
 Task
--due
--priority
--done
-	- markAsDone
-	- edit
-	- getDone
+-due : int
+-priority : int
+-done : boolean
+	- markAsDone void
+	- edit void
+	- getDone boolean
 TODOList
--tasks
-	- filter
-	- add
-	- remove
-	- get
-	- sort
+-tasks : list<Task>
+	- filter void
+	- add void
+	- remove void
+	- get list<Task>
+	- sort void
 SortByName imp comp
 SortByDate imp comp
 SortByPriority imp comp
