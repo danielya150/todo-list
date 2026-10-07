@@ -37,15 +37,21 @@ public class Task {
     return priority;
   }
 
-  public void edit(String name,  int priority, boolean done, int dueDate) {
+  public void edit(String name) {
     this.name=name;
-    this.priority=priority;
-    this.done=done;
-    this.dueDate=dueDate;
   }
 
   @Override
   public String toString(){
-    return name;
+    int Y = dueDate/10000;
+    int M = dueDate%10000 /100;
+    int D = dueDate%100;
+    String str = name + " Y: " + Y + " M: "
+    + M + " D: " + D + " Priority:" + priority;
+    if(done){
+      str = str + " (done)";
+      return str;
+    }
+    return str;
   }
 }

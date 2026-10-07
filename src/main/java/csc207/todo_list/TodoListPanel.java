@@ -15,13 +15,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class TodoListPanel extends JPanel implements ActionListener {
     public static final String DONE = " (done)";
     public static final String SAVE_DIR = "saves";
     public static final String SAVEFILE_TODO_LIST_JSON = SAVE_DIR + File.separator + "todo_list.json";
     private final JTextField textField;
-    private final DefaultListModel<String> textModel;
+    private final DefaultListModel<Task> textModel;
+    private TODOList tasks = new TODOList();
 
     public TodoListPanel() {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -29,10 +32,10 @@ public class TodoListPanel extends JPanel implements ActionListener {
         textField = new JTextField(20);
         textField.addActionListener(this); // JTextFields fire an ActionEvent when the user types Enter
 
-        textModel = new DefaultListModel<>();
+        textModel = new DefaultListModel<Task>();
         loadJsonFromFile();
 
-        JList<String> textList = new JList<>(textModel);
+        JList<Task> textList = new JList<>(textModel);
         JScrollPane scrollPane = new JScrollPane(textList);
 
         ListSelectionModel listSelectionModel = textList.getSelectionModel();
@@ -54,9 +57,11 @@ public class TodoListPanel extends JPanel implements ActionListener {
             @Override
             public void keyPressed(KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_DELETE || evt.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-                    deleteItem(textList);
+                    tasks.removeTask(textList.getSelectedValue());
+                    update();
                 } else if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
-                    toggleDone(textList);
+                    textList.getSelectedValue().toggleDone();
+                    update();
                 }
             }
         });
@@ -79,13 +84,15 @@ public class TodoListPanel extends JPanel implements ActionListener {
         edit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //TODO: add edit method
+                textList.getSelectedValue().edit(textField.getText());
+                update();
             }
         });
 
         add(textField);
         add(scrollPane);
         add(save);
+        add(edit);
     }
 
     private void loadJsonFromFile() {
@@ -93,12 +100,14 @@ public class TodoListPanel extends JPanel implements ActionListener {
         JSONArray jsonArray = readJsonFile();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
-            String task = jsonObject.getString("task");
+            String name = jsonObject.getString("task");
+            int date = jsonObject.getInt("date");
             boolean completed = jsonObject.getBoolean("completed");
+            int priority = jsonObject.getInt("priority");
             if (completed) {
-                task += DONE;
+                name += DONE;
             }
-            textModel.addElement(task);
+            textModel.addElement(new  Task(name, date, priority));
         }
     }
 
@@ -139,9 +148,14 @@ public class TodoListPanel extends JPanel implements ActionListener {
 
         for (int i = 0; i < textModel.size(); i++) {
             JSONObject jsonObject = new JSONObject();
-            String item = textModel.getElementAt(i);
-            jsonObject.put("task", item.replace(DONE, "").trim());
-            jsonObject.put("completed", item.endsWith(DONE));
+            String name = textModel.getElementAt(i).getName();
+            int priority = textModel.getElementAt(i).getPriority();
+            int date =  textModel.getElementAt(i).getDueDate();
+            boolean done = textModel.getElementAt(i).isDone();
+            jsonObject.put("task", name.replace(DONE, "").trim());
+            jsonObject.put("completed", done);
+            jsonObject.put("priority", priority);
+            jsonObject.put("date", date);
             jsonArray.put(jsonObject);
         }
 
@@ -155,38 +169,39 @@ public class TodoListPanel extends JPanel implements ActionListener {
         }
     }
 
-    private void toggleDone(JList<String> textList) {
+    private void selectItem(JList<Task> textList) {
         int selectedIndex = textList.getSelectedIndex();
         if (selectedIndex != -1) {
-            String selectedText = textModel.getElementAt(selectedIndex);
-            if (selectedText.endsWith(DONE)) {
-                selectedText = selectedText.substring(0, selectedText.length() - DONE.length());
-            } else {
-                selectedText = selectedText + DONE;
-            }
-            textModel.setElementAt(selectedText, selectedIndex);
-        }
-    }
-
-    private void deleteItem(JList<String> textList) {
-        int selectedIndex = textList.getSelectedIndex();
-        if (selectedIndex != -1) {
-            textModel.remove(selectedIndex);
-        }
-    }
-
-    private void selectItem(JList<String> textList) {
-        int selectedIndex = textList.getSelectedIndex();
-        if (selectedIndex != -1) {
-            String selectedText = textModel.getElementAt(selectedIndex);
+            String selectedText = textModel.getElementAt(selectedIndex).getName();
             textField.setText(selectedText);
         }
     }
 
     public void actionPerformed(ActionEvent evt) {
         String text = textField.getText();
-        textModel.addElement(text);
+        tasks.addTask(new Task(text, 0, 20000101));
+        update();
         textField.selectAll();
     }
 
+    public void sortBy(int ver){
+        tasks.sortTasks(ver);
+        update();
+    }
+
+    public void update(){
+        textModel.clear();
+        for (Task t : tasks.getTasks()) {
+            textModel.addElement(t);
+        }
+    }
+
+    public void filter(){
+        textModel.clear();
+        for (Task t : tasks.getTasks()) {
+            if (!t.isDone()){
+                textModel.addElement(t);
+            }
+        }
+    }
 }

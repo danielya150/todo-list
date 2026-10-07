@@ -7,7 +7,6 @@ Task
 	- getDone boolean
 TODOList
 -tasks : list<Task>
-	- filter void
 	- add void
 	- remove void
 	- get list<Task>

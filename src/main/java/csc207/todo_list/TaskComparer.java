@@ -6,7 +6,10 @@ public class TaskComparer implements Comparator<Task> {
   public static final int DATE = 1;
   public static final int PRIORITY = 2;
   public static final int NAME = 3;
-  private static int vers = 0;
+  private int vers = 0;
+  public TaskComparer(int vers) {
+    this.vers = vers;
+  }
   @Override
   public int compare(Task o1, Task o2) {
     switch(vers){
@@ -19,7 +22,7 @@ public class TaskComparer implements Comparator<Task> {
     }
   }
 
-  public static void setVers(int vers) {
-    TaskComparer.vers = vers;
+  public void setVers(int vers) {
+    this.vers = vers;
   }
 }
